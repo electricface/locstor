@@ -6,8 +6,8 @@ package locstor
 
 import (
 	"errors"
-	"fmt"
 
+	"github.com/cathalgarvey/fmtless"
 	"github.com/gopherjs/gopherjs/js"
 )
 

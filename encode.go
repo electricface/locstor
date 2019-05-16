@@ -5,15 +5,10 @@
 package locstor
 
 import (
-	"bytes"
-	"encoding/gob"
-	"encoding/json"
+	"github.com/cathalgarvey/fmtless/encoding/json"
 )
 
 var (
-	// BinaryEncoding is a ready-to-use implementation of EncoderDecoder which
-	// encodes data structures in a binary format using the gob package.
-	BinaryEncoding = &binaryEncoderDecoder{}
 	// JSONEncoding is a ready-to-use implementation of EncoderDecoder which
 	// encodes data structures as json.
 	JSONEncoding = &jsonEncoderDecoder{}
@@ -54,23 +49,3 @@ func (jsonEncoderDecoder) Decode(data []byte, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
 
-// binaryEncoderDecoder is an implementation of EncoderDecoder which uses binary
-// encoding via the gob package in the standard library.
-type binaryEncoderDecoder struct{}
-
-// Encode implements the Encode method of Encoder
-func (b binaryEncoderDecoder) Encode(v interface{}) ([]byte, error) {
-	buf := bytes.NewBuffer([]byte{})
-	enc := gob.NewEncoder(buf)
-	if err := enc.Encode(v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-// Decode implements the Decode method of Decoder
-func (b binaryEncoderDecoder) Decode(data []byte, v interface{}) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	return dec.Decode(v)
-}
