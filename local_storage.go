@@ -8,10 +8,10 @@ import (
 	"errors"
 
 	"github.com/cathalgarvey/fmtless"
-	"github.com/gopherjs/gopherjs/js"
+	"syscall/js"
 )
 
-var localStorage *js.Object
+var localStorage js.Value
 
 // ErrLocalStorageNotSupported is returned if localStorage is not supported.
 var ErrLocalStorageNotSupported = errors.New("localStorage does not appear to be supported/enabled in this browser")
@@ -41,17 +41,17 @@ func init() {
 func DetectStorage() (ok bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			localStorage = nil
+			localStorage = js.Null()
 			ok = false
 		}
 	}()
 
-	localStorage = js.Global.Get("localStorage")
+	localStorage = js.Global().Get("localStorage")
 
-	if localStorage == js.Undefined {
-		localStorage = nil
+	if localStorage == js.Undefined() {
+		localStorage = js.Null()
 	}
-	if localStorage == nil {
+	if localStorage == js.Null() {
 		return false
 	}
 
@@ -60,8 +60,8 @@ func DetectStorage() (ok bool) {
 	x := "__storage_test__"
 	localStorage.Set(x, x)
 	obj := localStorage.Get(x)
-	if obj == js.Undefined || obj == nil {
-		localStorage = nil
+	if obj == js.Undefined() || obj == js.Null() {
+		localStorage = js.Null()
 		return false
 	}
 	localStorage.Call("removeItem", x)
@@ -70,7 +70,7 @@ func DetectStorage() (ok bool) {
 
 // SetItem saves the given item in localStorage under the given key.
 func SetItem(key, item string) (err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage == js.Null() {
 		return ErrLocalStorageNotSupported
 	}
 	defer func() {
@@ -90,7 +90,7 @@ func SetItem(key, item string) (err error) {
 // GetItem finds and returns the item identified by key. If there is no item in
 // localStorage with the given key, GetItem will return an ItemNotFoundError.
 func GetItem(key string) (s string, err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage  == js.Null() {
 		return "", ErrLocalStorageNotSupported
 	}
 	defer func() {
@@ -105,7 +105,7 @@ func GetItem(key string) (s string, err error) {
 	}()
 
 	item := localStorage.Call("getItem", key)
-	if item == js.Undefined || item == nil {
+	if item == js.Undefined() || item == js.Null() {
 		err = newItemNotFoundError(
 			"Could not find an item with the given key: %s", key)
 	} else {
@@ -117,7 +117,7 @@ func GetItem(key string) (s string, err error) {
 // Key finds and returns the key associated with the given item. If the item is
 // not in localStorage, Key will return an ItemNotFoundError.
 func Key(item string) (s string, err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage == js.Null() {
 		return "", ErrLocalStorageNotSupported
 	}
 	defer func() {
@@ -132,7 +132,7 @@ func Key(item string) (s string, err error) {
 	}()
 
 	key := localStorage.Call("key", item)
-	if key == js.Undefined || key == nil {
+	if key == js.Undefined() || key == js.Null() {
 		err = newItemNotFoundError(
 			"Could not find a key for the given item: %s", item)
 	} else {
@@ -143,7 +143,7 @@ func Key(item string) (s string, err error) {
 
 // RemoveItem removes the item with the given key from localStorage.
 func RemoveItem(key string) (err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage == js.Null() {
 		return ErrLocalStorageNotSupported
 	}
 	defer func() {
@@ -162,7 +162,7 @@ func RemoveItem(key string) (err error) {
 
 // Length returns the number of items currently in localStorage.
 func Length() (l int, err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage == js.Null() {
 		return 0, ErrLocalStorageNotSupported
 	}
 	defer func() {
@@ -182,7 +182,7 @@ func Length() (l int, err error) {
 
 // Clear removes all items from localStorage.
 func Clear() (err error) {
-	if localStorage == nil || localStorage == js.Undefined {
+	if localStorage ==  js.Null() {
 		return ErrLocalStorageNotSupported
 	}
 	defer func() {
